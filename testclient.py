@@ -52,7 +52,7 @@ def doACommand(command,message,username,my_username):
             exit()
     elif command[0] == commandList[2]:
         if command[1] == my_username:
-            if "http" in command[2] and "/" in command[2] and "." in command[2]:
+            if "http" in command[2] and "/" in command[2] and "." in command[2] and ":" in command[2]:
                 webbrowser.open(command[2])
             else:
                 webbrowser.open("https://www.google.com/search?client=opera-gx&q="+command[2]+"&sourceid=opera&ie=UTF-8&oe=UTF-8")
