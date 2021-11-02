@@ -7,9 +7,9 @@ while loop == True:
     if "." in ipadress:
         ip = ipadress
         try:
-            port = portTest
+            port = int(portTest)
         except:
-            port = 808
+            port = 1234
         loop = False
     else:
         print("please try again")

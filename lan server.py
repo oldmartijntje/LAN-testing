@@ -13,7 +13,7 @@ def inputInt(text, feedback="that is not a number"):
             print(feedback)
     return number
 ip = socket.gethostbyname(socket.gethostname())
-portNumber = 808
+portNumber = 1234
 print(f"{ip}:{portNumber}")
 PORT = portNumber
 ADDRESS = ip
