@@ -145,7 +145,7 @@ while True:
             if command[0] in commandList:
                 doACommand(command,message,username,my_username)
             else:
-            print(f'{username} > {message}')
+                print(f'{username} > {message}')
 
     except IOError as e:
         # This is normal on non blocking connections - when there are no incoming data error is going to be raised
