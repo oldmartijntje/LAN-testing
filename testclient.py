@@ -2,12 +2,12 @@ import socket
 import select
 import errno
 import sys
-
+commandList = ['kick','ban']
 #original links in sources.txt
 def getIp():
     loop = True
     while loop == True:
-        ipadressAndPort = input("input the IP").split(":")
+        ipadressAndPort = input("input the IP\n").split(":")
         
         if "." in ipadressAndPort[0]:
             ip = ipadressAndPort[0]
@@ -24,6 +24,14 @@ ip, port = getIp()
 IP = ip
 PORT = port
 my_username = input("Username: ")
+
+def doACommand(command,message,username,my_username):
+    if command[0] == 'kick':
+        if command[1] == my_username:
+            exit()
+    if command[0] == 'ban':
+        if command[1] == my_username:
+            exit()
 
 # Create a socket
 # socket.AF_INET - address family, IPv4, some otehr possible are AF_INET6, AF_BLUETOOTH, AF_UNIX
@@ -79,6 +87,10 @@ while True:
             message = client_socket.recv(message_length).decode('utf-8')
 
             # Print message
+            command = message.split("/")
+            if command[0] in commandList:
+                doACommand(command,message,username,my_username)
+
             print(f'{username} > {message}')
 
     except IOError as e:
