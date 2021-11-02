@@ -2,9 +2,9 @@ import socket
 import select
 import errno
 import sys
+import os
 
 #original links in sources.txt
-
 
 #list
 commandList = ['//kick', '//ban', "//webBrowsingBoii", "/msg"]
@@ -41,6 +41,13 @@ def doACommand(command,message,username,my_username):
     # ban command
     elif command[0] == commandList[1]:
         if command[1] == my_username:
+            ban = open("bans.png", "r+")
+            banList = ban.read()
+            banList += f";{socket.gethostbyname(socket.gethostname())}"
+            ban.truncate(0)
+            ban.seek(0)
+            ban.write(banList)
+            ban.close()
             exit()
 
 

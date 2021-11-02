@@ -1,7 +1,17 @@
 import socket
 import select
+import os
 
 #original links in sources.txt
+
+#open banlist
+if os.path.isfile("bans.png"):
+    ban = open("bans.png", "r+")
+    banlist = ban.read().split(";")
+else:
+    banlist = list()
+    ban = open("bans.png", "x") 
+ban.close()
 
 HEADER_LENGTH = 10
 ip = socket.gethostbyname(socket.gethostname())
@@ -77,12 +87,19 @@ while True:
 
         # If notified socket is a server socket - new connection, accept it
         if notified_socket == server_socket:
-
+            if os.path.isfile("bans.png"):
+                ban = open("bans.png", "r+")
+                banlist = ban.read().split(";")
+            else:
+                banlist = list()
+                ban = open("bans.png", "x") 
+            ban.close()
             # Accept new connection
             # That gives us new socket - client socket, connected to this given client only, it's unique for that client
             # The other returned object is ip/port set
             client_socket, client_address = server_socket.accept()
-
+            if client_address[0] in banlist:
+                client_socket.close()
             # Client should send his name right away, receive it
             user = receive_message(client_socket)
 
