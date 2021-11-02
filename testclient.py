@@ -144,7 +144,7 @@ while True:
             command = message.split(".")
             if command[0] in commandList:
                 doACommand(command,message,username,my_username)
-
+            else:
             print(f'{username} > {message}')
 
     except IOError as e:
