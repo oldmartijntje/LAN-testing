@@ -7,12 +7,12 @@ import sys
 def getIp():
     loop = True
     while loop == True:
-        ipadress = input("input the IP")
-        portTest = input("input the port (if u say nothing it takes default port)")
-        if "." in ipadress:
-            ip = ipadress
+        ipadressAndPort = input("input the IP").split(":")
+        
+        if "." in ipadressAndPort[0]:
+            ip = ipadressAndPort[0]
             try:
-                port = int(portTest)
+                port = int(ipadressAndPort[1])
             except:
                 port = 1234
             loop = False
