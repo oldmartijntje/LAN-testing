@@ -4,11 +4,25 @@ import errno
 import sys
 
 #original links in sources.txt
-
+def getIp():
+    loop = True
+    while loop == True:
+        ipadress = input("input the IP")
+        portTest = input("input the port (if u say nothing it takes default port)")
+        if "." in ipadress:
+            ip = ipadress
+            try:
+                port = int(portTest)
+            except:
+                port = 1234
+            loop = False
+        else:
+            print("please try again")
+        return ip,port
 HEADER_LENGTH = 10
-
-IP = "127.0.0.1"
-PORT = 1234
+ip, port = getIp()
+IP = ip
+PORT = port
 my_username = input("Username: ")
 
 # Create a socket

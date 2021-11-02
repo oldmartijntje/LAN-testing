@@ -4,10 +4,9 @@ import select
 #original links in sources.txt
 
 HEADER_LENGTH = 10
-
-IP = "127.0.0.1"
+ip = socket.gethostbyname(socket.gethostname())
+IP = ip
 PORT = 1234
-
 # Create a socket
 # socket.AF_INET - address family, IPv4, some otehr possible are AF_INET6, AF_BLUETOOTH, AF_UNIX
 # socket.SOCK_STREAM - TCP, conection-based, socket.SOCK_DGRAM - UDP, connectionless, datagrams, socket.SOCK_RAW - raw IP packets
