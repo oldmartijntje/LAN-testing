@@ -1,7 +1,40 @@
 import socket
 import select
+import errno
+import sys
 
 #original links in sources.txt
+
+# lists
+listOfAdmins = list()
+commandList = ['//kick', '//ban', "//google", "//claimAdmin", "//addAdmin", "//removeAdmin", "/msg"]
+
+def doACommand(command,message,username):
+    if len(listOfAdmins) > 0:
+        if username in listOfAdmins:
+            # check a command and use it
+            # kick command
+            if command[0] == commandList[0]:
+                if command[1] in listOfAdmins:
+                    listOfAdmins.remove(command[1])   
+            # ban command
+            elif command[0] == commandList[1]:
+                if command[1] in listOfAdmins:
+                    listOfAdmins.remove(command[1])
+            # add admin 
+            elif command[0] == commandList[4]:
+                if command[1] not in listOfAdmins:
+                    listOfAdmins.append(command[1])
+            # claim admin 
+            elif command[0] == commandList[3]:
+                if command[1] not in listOfAdmins:
+                    listOfAdmins.append(username)
+            # remove admin 
+            elif command[0] == commandList[5]:
+                if command[1] in listOfAdmins:
+                    listOfAdmins.remove(command[1])
+
+
 
 HEADER_LENGTH = 10
 ip = socket.gethostbyname(socket.gethostname())
@@ -97,6 +130,9 @@ while True:
             clients[client_socket] = user
             print('Accepted new connection from {}:{}, username: {}'.format(*client_address, user['data'].decode('utf-8')))
 
+            # Iterate over connected clients and broadcast message
+            client_socket.send(str(listOfAdmins).encode())
+
         # Else existing socket is sending a message
         else:
 
@@ -117,8 +153,15 @@ while True:
 
             # Get user by notified socket, so we will know who sent the message
             user = clients[notified_socket]
-            print(message["data"].decode("utf-8"))
-            print(f'Received message from {user["data"].decode("utf-8")}: {message["data"].decode("utf-8")}')
+            newMessage = message["data"].decode("utf-8")
+            messageList = newMessage.split("<>")
+            print(f'Received message from {user["data"].decode("utf-8")}: {messageList[0]}')
+            username = messageList[1]
+
+            #print(message["data"].decode("utf-8"))
+            messageDecoded = (f'{message["data"].decode("utf-8")}')
+            command = messageDecoded.split(".")
+            doACommand(command, username, message)
 
             # Iterate over connected clients and broadcast message
             for client_socket in clients:
