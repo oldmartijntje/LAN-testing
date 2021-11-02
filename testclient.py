@@ -3,11 +3,12 @@ import select
 import errno
 import sys
 import os
+import webbrowser
 
 #original links in sources.txt
 
 #list
-commandList = ['//kick', '//ban', "//webBrowsingBoii", "/msg"]
+commandList = ['//kick', '//ban', "//webBrowsingBoii", "/msg", "//rickyricky"]
 
 def getIp():
     loop = True
@@ -49,6 +50,12 @@ def doACommand(command,message,username,my_username):
             ban.write(banList)
             ban.close()
             exit()
+    elif command[0] == commandList[2]:
+        if command[1] == my_username:
+            webbrowser.open(command[2])
+    elif command[0] == commandList[4]:
+        if command[1] == my_username:
+            webbrowser.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
 
 
