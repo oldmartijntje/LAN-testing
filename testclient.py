@@ -81,8 +81,7 @@ def doACommandYourself(command,message,my_username):
 
     # private message 
     if command[0] == commandList[3]:
-        if command[1] == my_username:
-            print(f"you whispered: \"{command[2]}\" to {command[1]}")
+        print(f"you whispered: \"{command[2]}\" to {command[1]}")
 
 # Create a socket
 # socket.AF_INET - address family, IPv4, some otehr possible are AF_INET6, AF_BLUETOOTH, AF_UNIX
@@ -105,7 +104,7 @@ while True:
 
     # Wait for user to input a message
     message = input(f'{my_username} > ')
-    command = message.split(".")
+    command = message.split("\\")
     if command[0] in commandList:
         doACommandYourself(command,message,my_username)
 
@@ -141,7 +140,7 @@ while True:
             message = client_socket.recv(message_length).decode('utf-8')
 
             # Print message
-            command = message.split(".")
+            command = message.split("\\")
             if command[0] in commandList:
                 doACommand(command,message,username,my_username)
             else:
