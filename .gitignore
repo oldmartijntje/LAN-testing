@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+### Format1  ###
+newGithubUpdater.bat
+
+
 # C extensions
 *.so
 

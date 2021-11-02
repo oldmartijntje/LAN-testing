@@ -1,0 +1,7 @@
+original versions of:
+sentdex-socket-client.py
+and
+sentdex-socket-server.py
+by
+https://pythonprogramming.net/server-chatroom-sockets-tutorial-python-3/
+https://www.youtube.com/watch?v=CV7_stUWvBQ
