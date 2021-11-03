@@ -13,6 +13,9 @@ else:
     ban = open("bans.png", "x") 
 ban.close()
 
+# playerlist
+playerList = list()
+
 HEADER_LENGTH = 10
 ip = socket.gethostbyname(socket.gethostname())
 IP = ip
@@ -110,8 +113,13 @@ while True:
             # Add accepted socket to select.select() list
             sockets_list.append(client_socket)
 
-            # Also save username and username header
+
             clients[client_socket] = user
+            
+            # save user to the user list
+            playerList.append(user['data'].decode('utf-8'))
+
+            # Also save username and username header
             print('Accepted new connection from {}:{}, username: {}'.format(*client_address, user['data'].decode('utf-8')))
 
         # Else existing socket is sending a message
@@ -122,8 +130,14 @@ while True:
 
             # If False, client disconnected, cleanup
             if message is False:
+                
                 print('Closed connection from: {}'.format(clients[notified_socket]['data'].decode('utf-8')))
 
+                # remove user from user list
+                try:
+                    playerList.remove(clients[notified_socket]['data'].decode('utf-8'))
+                except:
+                    e = 0
                 # Remove from list for socket.socket()
                 sockets_list.remove(notified_socket)
 
