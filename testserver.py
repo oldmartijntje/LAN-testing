@@ -1,17 +1,33 @@
 import socket
 import select
 import os
+import datetime
 
 #original links in sources.txt
 
+
 #open banlist
 if os.path.isfile("bans.png"):
-    ban = open("bans.png", "r+")
-    banlist = ban.read().split(";")
+    log = open("bans.png", "r+")
+    banlist = log.read().split(";")
 else:
     banlist = list()
-    ban = open("bans.png", "x") 
-ban.close()
+    log = open("bans.png", "x") 
+log.close()
+
+# create log file
+timeOfLog = str(datetime.datetime.now())
+log = open(f"log-{timeOfLog}.txt", "x") 
+log.close()
+
+def addToLog(username, message = "", action = 0):
+    log = open(f"log-{timeOfLog}.txt", "r+") 
+    if action == 0:
+        log.write(f"{username} did say {message}")
+    elif action == 1:
+        log.write(f"-=|{username} just landed|=-")
+    elif action == 2:
+        log.write(f"-=|{username} wanted to get the fuck outta here|=-")
 
 # playerlist
 playerList = list()
@@ -91,12 +107,12 @@ while True:
         # If notified socket is a server socket - new connection, accept it
         if notified_socket == server_socket:
             if os.path.isfile("bans.png"):
-                ban = open("bans.png", "r+")
-                banlist = ban.read().split(";")
+                log = open("bans.png", "r+")
+                banlist = log.read().split(";")
             else:
                 banlist = list()
-                ban = open("bans.png", "x") 
-            ban.close()
+                log = open("bans.png", "x") 
+            log.close()
             # Accept new connection
             # That gives us new socket - client socket, connected to this given client only, it's unique for that client
             # The other returned object is ip/port set
@@ -121,6 +137,7 @@ while True:
 
             # Also save username and username header
             print('Accepted new connection from {}:{}, username: {}'.format(*client_address, user['data'].decode('utf-8')))
+            addToLog(user['data'].decode('utf-8'), "", action = 1)
 
         # Else existing socket is sending a message
         else:
@@ -132,6 +149,7 @@ while True:
             if message is False:
                 
                 print('Closed connection from: {}'.format(clients[notified_socket]['data'].decode('utf-8')))
+                addToLog(clients[notified_socket]['data'].decode('utf-8'), "", action = 2)
 
                 # remove user from user list
                 try:

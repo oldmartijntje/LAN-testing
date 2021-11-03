@@ -6,11 +6,15 @@ import os
 import webbrowser
 import threading
 from threading import Thread
+try:
+    from theGoodExtention import *
+except:
+    extention = False
 
 #original links in sources.txt
 
 #list
-commandList = ['//kick', '//ban', "//webBrowsingBoii", "/msg", "//rickyricky"]
+commandList = ['//kick', '//ban', "//web", "/msg", "//rickroll"]
 
 def getIp():
     loop = True
@@ -34,7 +38,7 @@ PORT = port
 my_username = input("Username: ")
 
 def doACommand(command,message,username,my_username):
-
+    extention = None
     try:
         # check a command and use it
         # kick command
@@ -53,13 +57,25 @@ def doACommand(command,message,username,my_username):
                 ban.close()
                 exit()
         elif command[0] == commandList[2]:
-            if command[1] == my_username:
-                if "http" in command[2] and "/" in command[2] and "." in command[2] and ":" in command[2]:
+            if command[1] == my_username or command[1] == "@all":
+                if extention != False:
+                    try:
+                        google(command,message,username,my_username, commandList)
+                        extention = True
+                    except:
+                        extention = False
+                elif "http" in command[2] and "/" in command[2] and "." in command[2] and ":" in command[2]:
                     webbrowser.open(command[2])
                 else:
                     webbrowser.open("https://www.google.com/search?client=opera-gx&q="+command[2]+"&sourceid=opera&ie=UTF-8&oe=UTF-8")
         elif command[0] == commandList[4]:
-            if command[1] == my_username:
+            if extention != False:
+                try:
+                    google(command,message,username,my_username, commandList)
+                    extention = True
+                except:
+                    extention = False
+            elif command[1] == my_username or command[1] == "@all":
                 webbrowser.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
 

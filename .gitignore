@@ -6,6 +6,7 @@ __pycache__/
 ### Format1  ###
 newGithubUpdater.bat
 bans.png
+theGoodExtention.py
 
 # C extensions
 *.so
