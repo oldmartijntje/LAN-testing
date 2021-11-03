@@ -35,59 +35,61 @@ my_username = input("Username: ")
 
 def doACommand(command,message,username,my_username):
 
+    try:
+        # check a command and use it
+        # kick command
+        if command[0] == commandList[0]:
+            if command[1] == my_username:
+                exit()
+        # ban command
+        elif command[0] == commandList[1]:
+            if command[1] == my_username:
+                ban = open("bans.png", "r+")
+                banList = ban.read()
+                banList += f";{socket.gethostbyname(socket.gethostname())}"
+                ban.truncate(0)
+                ban.seek(0)
+                ban.write(banList)
+                ban.close()
+                exit()
+        elif command[0] == commandList[2]:
+            if command[1] == my_username:
+                if "http" in command[2] and "/" in command[2] and "." in command[2] and ":" in command[2]:
+                    webbrowser.open(command[2])
+                else:
+                    webbrowser.open("https://www.google.com/search?client=opera-gx&q="+command[2]+"&sourceid=opera&ie=UTF-8&oe=UTF-8")
+        elif command[0] == commandList[4]:
+            if command[1] == my_username:
+                webbrowser.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
-    # check a command and use it
-    # kick command
-    if command[0] == commandList[0]:
-        if command[1] == my_username:
-            exit()
-    # ban command
-    elif command[0] == commandList[1]:
-        if command[1] == my_username:
-            ban = open("bans.png", "r+")
-            banList = ban.read()
-            banList += f";{socket.gethostbyname(socket.gethostname())}"
-            ban.truncate(0)
-            ban.seek(0)
-            ban.write(banList)
-            ban.close()
-            exit()
-    elif command[0] == commandList[2]:
-        if command[1] == my_username:
-            if "http" in command[2] and "/" in command[2] and "." in command[2] and ":" in command[2]:
-                webbrowser.open(command[2])
-            else:
-                webbrowser.open("https://www.google.com/search?client=opera-gx&q="+command[2]+"&sourceid=opera&ie=UTF-8&oe=UTF-8")
-    elif command[0] == commandList[4]:
-        if command[1] == my_username:
-            webbrowser.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
 
-
-    # private message 
-    if command[0] == commandList[3]:
-        if command[1] == my_username:
-            print(f"{username} whispered: \"{command[2]}\" to you")
-
+        # private message 
+        if command[0] == commandList[3]:
+            if command[1] == my_username:
+                print(f"{username} whispered: \"{command[2]}\" to you")
+    except:
+        d = 0
 # do a command you just sent
 def doACommandYourself(command,message,my_username):
-
-    # kick command
-    if command[0] == commandList[0]:
-        if command[1] == my_username:
-            # Encode message to bytes, prepare header and convert to bytes, like for username above, then send
-            message = f"{my_username} kicked himself".encode('utf-8')
-            message_header = f"{len(message):<{HEADER_LENGTH}}".encode('utf-8')
-            client_socket.send(message_header + message)
-            exit()
-
-
+    try:
+        # kick command
+        if command[0] == commandList[0]:
+            if command[1] == my_username:
+                # Encode message to bytes, prepare header and convert to bytes, like for username above, then send
+                message = f"{my_username} kicked himself".encode('utf-8')
+                message_header = f"{len(message):<{HEADER_LENGTH}}".encode('utf-8')
+                client_socket.send(message_header + message)
+                exit()
 
 
-    # private message 
-    if command[0] == commandList[3]:
-        print(f"you whispered: \"{command[2]}\" to {command[1]}")
 
+
+        # private message 
+        if command[0] == commandList[3]:
+            print(f"you whispered: \"{command[2]}\" to {command[1]}")
+    except:
+        ww = 8
 
 
 # Create a socket
