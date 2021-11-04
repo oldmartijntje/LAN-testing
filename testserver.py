@@ -20,6 +20,9 @@ timeOfLaunchFixed = f"{timeOfLaunch[0]}.{timeOfLaunch[1]}.{timeOfLaunch[2]}"
 #get the programs path
 ownPath = pathlib.Path().resolve()
 
+#create log name
+LOG_FILENAME = f"{ownPath}/ServerFiles/log-{timeOfLaunchFixed}.log"
+
 #create log folder if it doesn't exist
 if not os.path.exists(f'{ownPath}/ServerFiles'):
     os.makedirs(f'{ownPath}/ServerFiles')
@@ -46,24 +49,28 @@ settings = open(f"{ownPath}/ServerFiles/.Setting.txt", "r")
 settingsNotSplitted = settings.read()
 settingsSplitted = settingsNotSplitted.split("\n")
 
+def exit_handler():
+    print('My application is ending!')
 
 makeLog = True
 if makeLog == True:
     #setup log file
-    logging.basicConfig(filename=f"{ownPath}/ServerFiles/log-{timeOfLaunchFixed}.log",
-                            filemode='a',
-                            format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
-                            datefmt='%H:%M:%S',
-                            level=logging.DEBUG)
+    logging.basicConfig(filename=LOG_FILENAME ,level=logging.DEBUG)
 
 def addToLog(username, message = "", action = 0):
     if makeLog == True:
         if action == 0:
-            logging.info(f"{username} did say {message}")
+            logging.info(f"{username} did say {message}  {datetime.datetime.now()}")
         elif action == 1:
-            logging.critical(f"{username} just landed")
+            logging.critical(f"{username} just landed  {datetime.datetime.now()}")
         elif action == 2:
-            logging.critical(f"{username} wanted to get the fuck outta here")
+            logging.critical(f"{username} wanted to get the fuck outta here  {datetime.datetime.now()}")
+    f = open(f"{ownPath}/ServerFiles/log-{timeOfLaunchFixed}.log", 'rt')
+    try:
+        body = f.read()
+    finally:
+        f.close()
+    
 
 # playerlist
 playerList = list()
@@ -173,7 +180,7 @@ while True:
 
             # Also save username and username header
             print('Accepted new connection from {}:{}, username: {}'.format(*client_address, user['data'].decode('utf-8')))
-            #addToLog(user['data'].decode('utf-8'), "", action = 1)
+            addToLog(user['data'].decode('utf-8'), "", action = 1)
 
         # Else existing socket is sending a message
         else:
@@ -185,7 +192,7 @@ while True:
             if message is False:
                 
                 print('Closed connection from: {}'.format(clients[notified_socket]['data'].decode('utf-8')))
-                #addToLog(clients[notified_socket]['data'].decode('utf-8'), "", action = 2)
+                addToLog(clients[notified_socket]['data'].decode('utf-8'), "", action = 2)
 
                 # remove user from user list
                 try:
@@ -203,7 +210,7 @@ while True:
             # Get user by notified socket, so we will know who sent the message
             user = clients[notified_socket]
             print(f'Received message from {user["data"].decode("utf-8")}: {message["data"].decode("utf-8")}')
-
+            addToLog(user['data'].decode('utf-8'), f'{message["data"].decode("utf-8")}', 0)
             # Iterate over connected clients and broadcast message
             for client_socket in clients:
 
