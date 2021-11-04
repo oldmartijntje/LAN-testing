@@ -42,7 +42,8 @@ else:
 settings.close()
 
 #check the settings
-settingsNotSplitted = open(f"{ownPath}/ServerFiles/.Setting.txt", "r")
+settings = open(f"{ownPath}/ServerFiles/.Setting.txt", "r")
+settingsNotSplitted = settings.read()
 settingsSplitted = settingsNotSplitted.split("\n")
 
 
