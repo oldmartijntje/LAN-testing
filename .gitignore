@@ -7,6 +7,8 @@ __pycache__/
 newGithubUpdater.bat
 bans.png
 theGoodExtention.py
+ServerFiles/
+ClientFiles/
 
 # C extensions
 *.so

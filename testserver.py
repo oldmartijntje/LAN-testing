@@ -2,38 +2,73 @@ import socket
 import select
 import os
 import datetime
+import pathlib
+import logging
 
-#original links in sources.txt
+#####original links in sources.txt######
 
+#get ip
+ip = socket.gethostbyname(socket.gethostname())
+
+# create log date
+timeOfLaunch = str(datetime.datetime.now())
+#split because there can't be : in a file name
+timeOfLaunch = timeOfLaunch.split(":")
+#put time back together
+timeOfLaunchFixed = f"{timeOfLaunch[0]}.{timeOfLaunch[1]}.{timeOfLaunch[2]}"
+
+#get the programs path
+ownPath = pathlib.Path().resolve()
+
+#create log folder if it doesn't exist
+if not os.path.exists(f'{ownPath}/ServerFiles'):
+    os.makedirs(f'{ownPath}/ServerFiles')
 
 #open banlist
-if os.path.isfile("bans.png"):
-    log = open("bans.png", "r+")
-    banlist = log.read().split(";")
+if os.path.isfile(f"{ownPath}/ServerFiles/bans.png"):
+    ban = open(f"{ownPath}/ServerFiles/bans.png", "r+")
+    banlist = ban.read().split(";")
 else:
     banlist = list()
-    log = open("bans.png", "x") 
-log.close()
+    ban = open(f"{ownPath}/ServerFiles/bans.png", "x") 
+ban.close()
 
-# create log file
-timeOfLog = str(datetime.datetime.now())
-log = open(f"log-{timeOfLog}.txt", "x") 
-log.close()
+#open settings
+if os.path.isfile(f"{ownPath}/ServerFiles/.Setting.txt"):
+    settings = open(f"{ownPath}/ServerFiles/.Setting.txt", "r+")
+else:
+    settings = open(f"{ownPath}/ServerFiles/.Setting.txt", "x")
+    settings.write("#if you leave empty lines, of with other characters(unless the line starts with #, then it is okay), the program will choose by itself\n#do you want to save logs? then put 'True' on the next line, if not, put 'False' on the next line without a #\nFalse\n#do you want a password? then put 'True' on the next line, if not, put 'False' on the next line without a #\nFalse\n#do you want custom IP adress (will probably do nothing) then put the IP next line (example: 127.0.1.1) if not, type 'False'\nFalse\n#Do you want custom Port? if yes, type the port next line (example: 1234) if not, type 'False'\nFalse")
+settings.close()
+
+#check the settings
+settingsNotSplitted = open(f"{ownPath}/ServerFiles/.Setting.txt", "r")
+settingsSplitted = settingsNotSplitted.split("\n")
+
+
+makeLog = True
+if makeLog == True:
+    #setup log file
+    logging.basicConfig(filename=f"{ownPath}/ServerFiles/log-{timeOfLaunchFixed}.log",
+                            filemode='a',
+                            format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+                            datefmt='%H:%M:%S',
+                            level=logging.DEBUG)
 
 def addToLog(username, message = "", action = 0):
-    log = open(f"log-{timeOfLog}.txt", "r+") 
-    if action == 0:
-        log.write(f"{username} did say {message}")
-    elif action == 1:
-        log.write(f"-=|{username} just landed|=-")
-    elif action == 2:
-        log.write(f"-=|{username} wanted to get the fuck outta here|=-")
+    if makeLog == True:
+        if action == 0:
+            logging.info(f"{username} did say {message}")
+        elif action == 1:
+            logging.critical(f"{username} just landed")
+        elif action == 2:
+            logging.critical(f"{username} wanted to get the fuck outta here")
 
 # playerlist
 playerList = list()
 
 HEADER_LENGTH = 10
-ip = socket.gethostbyname(socket.gethostname())
+
 IP = ip
 PORT = 1234
 # Create a socket
@@ -106,12 +141,12 @@ while True:
 
         # If notified socket is a server socket - new connection, accept it
         if notified_socket == server_socket:
-            if os.path.isfile("bans.png"):
-                log = open("bans.png", "r+")
+            if os.path.isfile(f"{ownPath}/ServerFiles/bans.png"):
+                log = open(f"{ownPath}/ServerFiles/bans.png", "r+")
                 banlist = log.read().split(";")
             else:
                 banlist = list()
-                log = open("bans.png", "x") 
+                log = open(f"{ownPath}/ServerFiles/bans.png", "x") 
             log.close()
             # Accept new connection
             # That gives us new socket - client socket, connected to this given client only, it's unique for that client
@@ -137,7 +172,7 @@ while True:
 
             # Also save username and username header
             print('Accepted new connection from {}:{}, username: {}'.format(*client_address, user['data'].decode('utf-8')))
-            addToLog(user['data'].decode('utf-8'), "", action = 1)
+            #addToLog(user['data'].decode('utf-8'), "", action = 1)
 
         # Else existing socket is sending a message
         else:
@@ -149,7 +184,7 @@ while True:
             if message is False:
                 
                 print('Closed connection from: {}'.format(clients[notified_socket]['data'].decode('utf-8')))
-                addToLog(clients[notified_socket]['data'].decode('utf-8'), "", action = 2)
+                #addToLog(clients[notified_socket]['data'].decode('utf-8'), "", action = 2)
 
                 # remove user from user list
                 try:

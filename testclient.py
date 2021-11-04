@@ -1,17 +1,29 @@
 import socket
-import select
 import errno
 import sys
 import os
 import webbrowser
-import threading
-from threading import Thread
+import datetime
+import pathlib
 try:
     from theGoodExtention import *
 except:
     extention = False
 
-#original links in sources.txt
+#####original links in sources.txt######
+
+# create log date
+timeOfLaunch = str(datetime.datetime.now())
+#split because there can't be : in a file name
+timeOfLaunch = timeOfLaunch.split(":")
+#put time back together
+timeOfLaunchFixed = f"{timeOfLaunch[0]}.{timeOfLaunch[1]}.{timeOfLaunch[2]}"
+
+#get the programs path
+ownPath = pathlib.Path().resolve()
+#create log folder if it doesn't exist
+if not os.path.exists(f'{ownPath}/ClientFiles'):
+    os.makedirs(f'{ownPath}/ClientFiles')
 
 #list
 commandList = ['//kick', '//ban', "//web", "/msg", "//rickroll"]
@@ -42,12 +54,18 @@ def doACommand(command,message,username,my_username):
     try:
         # check a command and use it
         # kick command
+        #print(message)
+        #print(command)
         if command[0] == commandList[0]:
+            #print("test1")
             if command[1] == my_username:
+                #print("test1b")
                 exit()
         # ban command
         elif command[0] == commandList[1]:
+            #print("test2")
             if command[1] == my_username:
+                #print("test3")
                 ban = open("bans.png", "r+")
                 banList = ban.read()
                 banList += f";{socket.gethostbyname(socket.gethostname())}"
@@ -57,25 +75,37 @@ def doACommand(command,message,username,my_username):
                 ban.close()
                 exit()
         elif command[0] == commandList[2]:
+            #print("test4")
             if command[1] == my_username or command[1] == "@all":
-                if extention != False:
-                    try:
-                        google(command,message,username,my_username, commandList)
-                        extention = True
-                    except:
-                        extention = False
-                elif "http" in command[2] and "/" in command[2] and "." in command[2] and ":" in command[2]:
+                #print("test5")
+                
+                try:
+                    #print("test7a")
+                    google(command,message,username,my_username, commandList, timeOfLaunchFixed)
+                    extention = True
+                    #print("test7")
+                except:
+                    #print("test8")
+                    extention = False
+                if "http" in command[2] and "/" in command[2] and "." in command[2] and ":" in command[2]:
+                    #print("test9")
                     webbrowser.open(command[2])
-                else:
+                elif extention == False:
+                    #print("test10")
                     webbrowser.open("https://www.google.com/search?client=opera-gx&q="+command[2]+"&sourceid=opera&ie=UTF-8&oe=UTF-8")
         elif command[0] == commandList[4]:
-            if extention != False:
-                try:
-                    google(command,message,username,my_username, commandList)
-                    extention = True
-                except:
-                    extention = False
-            elif command[1] == my_username or command[1] == "@all":
+            #print("test11")
+            
+            try:
+                #print("test13a")
+                google(command,message,username,my_username, commandList, timeOfLaunchFixed)
+                extention = True
+                #print("test13")
+            except:
+                #print("test14")
+                extention = False
+            if command[1] == my_username or command[1] == "@all" and extention == False:
+                #print("test15")
                 webbrowser.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
 
@@ -164,6 +194,12 @@ while True:
             message_length = int(message_header.decode('utf-8').strip())
             message = client_socket.recv(message_length).decode('utf-8')
 
+            #try to see if there is a extention
+            if extention == False:
+                try:
+                    from theGoodExtention import *
+                except:
+                    extention = False
             # Print message
             command = message.split("\\")
             if command[0] in commandList:
