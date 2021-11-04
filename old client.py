@@ -1,33 +1,9 @@
 import socket
+import select
 import errno
 import sys
-import os
-import webbrowser
-import datetime
-import pathlib
-import logging
-try:
-    from theGoodExtention import *
-except:
-    extention = False
-
-
-# create log date
-timeOfLaunch = str(datetime.datetime.now())
-#split because there can't be : in a file name
-timeOfLaunch = timeOfLaunch.split(":")
-#put time back together
-timeOfLaunchFixed = f"{timeOfLaunch[0]}.{timeOfLaunch[1]}.{timeOfLaunch[2]}"
-
-#get the programs path
-ownPath = pathlib.Path().resolve()
-#create log folder if it doesn't exist
-if not os.path.exists(f'{ownPath}/ClientFiles'):
-    os.makedirs(f'{ownPath}/ClientFiles')
-
-#list
-commandList = ['//kick', '//ban', "//web", "/msg", "//rickroll"]
-
+commandList = ['kick','ban']
+#original links in sources.txt
 def getIp():
     loop = True
     while loop == True:
@@ -50,76 +26,12 @@ PORT = port
 my_username = input("Username: ")
 
 def doACommand(command,message,username,my_username):
-    extention = "None"
-    try:
-        # check a command and use it
-        # kick command
-        #print(message)
-        #print(command)
-        if command[0] == commandList[0]:
-            if command[1] == my_username:
-                exit()
-        # ban command
-        elif command[0] == commandList[1]:
-            if command[1] == my_username:
-                ban = open("bans.png", "r+")
-                banList = ban.read()
-                banList += f";{socket.gethostbyname(socket.gethostname())}"
-                ban.truncate(0)
-                ban.seek(0)
-                ban.write(banList)
-                ban.close()
-                exit()
-        elif command[0] == commandList[2]:
-            if command[1] == my_username or command[1] == "@all":          
-                try:
-                    google(command,message,username,my_username, commandList, timeOfLaunchFixed)
-                    extention = True
-                except:
-                    extention = False
-                if "http" in command[2] and "/" in command[2] and "." in command[2] and ":" in command[2]:
-                    webbrowser.open(command[2])
-                elif extention == False:
-                    webbrowser.open("https://www.google.com/search?client=opera-gx&q="+command[2]+"&sourceid=opera&ie=UTF-8&oe=UTF-8")
-        elif command[0] == commandList[4]:
-            
-            try:
-                google(command,message,username,my_username, commandList, timeOfLaunchFixed)
-                extention = True
-            except:
-                extention = False
-            if command[1] == my_username or command[1] == "@all" and extention == False:
-                webbrowser.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
-
-
-
-        # private message 
-        if command[0] == commandList[3]:
-            if command[1] == my_username:
-                print(f"{username} whispered: \"{command[2]}\" to you")
-    except:
-        d = 0
-# do a command you just sent
-def doACommandYourself(command,message,my_username):
-    try:
-        # kick command
-        if command[0] == commandList[0]:
-            if command[1] == my_username:
-                # Encode message to bytes, prepare header and convert to bytes, like for username above, then send
-                message = f"{my_username} kicked himself".encode('utf-8')
-                message_header = f"{len(message):<{HEADER_LENGTH}}".encode('utf-8')
-                client_socket.send(message_header + message)
-                exit()
-
-
-
-
-        # private message 
-        if command[0] == commandList[3]:
-            print(f"you whispered: \"{command[2]}\" to {command[1]}")
-    except:
-        ww = 8
-
+    if command[0] == 'kick':
+        if command[1] == my_username:
+            exit()
+    if command[0] == 'ban':
+        if command[1] == my_username:
+            exit()
 
 # Create a socket
 # socket.AF_INET - address family, IPv4, some otehr possible are AF_INET6, AF_BLUETOOTH, AF_UNIX
@@ -142,9 +54,6 @@ while True:
 
     # Wait for user to input a message
     message = input(f'{my_username} > ')
-    command = message.split("\\")
-    if command[0] in commandList:
-        doACommandYourself(command,message,my_username)
 
     # If message is not empty - send it
     if message:
@@ -178,11 +87,11 @@ while True:
             message = client_socket.recv(message_length).decode('utf-8')
 
             # Print message
-            command = message.split("\\")
+            command = message.split("/")
             if command[0] in commandList:
                 doACommand(command,message,username,my_username)
-            else:
-                print(f'{username} > {message}')
+
+            print(f'{username} > {message}')
 
     except IOError as e:
         # This is normal on non blocking connections - when there are no incoming data error is going to be raised
@@ -191,8 +100,7 @@ while True:
         # If we got different error code - something happened
         if e.errno != errno.EAGAIN and e.errno != errno.EWOULDBLOCK:
             print('Reading error: {}'.format(str(e)))
-            logging.exception("Exception occurred", e)
-            #sys.exit()
+            sys.exit()
 
         # We just did not receive anything
         continue
@@ -200,5 +108,4 @@ while True:
     except Exception as e:
         # Any other exception - something happened, exit
         print('Reading error: '.format(str(e)))
-        logging.exception("Exception occurred", e)
-        #sys.exit()
+        sys.exit()

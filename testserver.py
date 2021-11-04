@@ -60,7 +60,7 @@ if makeLog == True:
 def addToLog(username, message = "", action = 0):
     if makeLog == True:
         if action == 0:
-            logging.info(f"{username} did say {message}  {datetime.datetime.now()}")
+            logging.info(f"{username} did say \"{message}\"  {datetime.datetime.now()}")
         elif action == 1:
             logging.critical(f"{username} just landed  {datetime.datetime.now()}")
         elif action == 2:
