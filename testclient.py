@@ -51,6 +51,7 @@ my_username = input("Username: ")
 
 def doACommand(command,message,username,my_username):
     extention = "None"
+    shotdown = False
     try:
         # check a command and use it
         # kick command
@@ -58,7 +59,8 @@ def doACommand(command,message,username,my_username):
         #print(command)
         if command[0] == commandList[0]:
             if command[1] == my_username:
-                exit()
+                shotdown = True
+                sys.exit()
         # ban command
         elif command[0] == commandList[1]:
             if command[1] == my_username:
@@ -69,7 +71,8 @@ def doACommand(command,message,username,my_username):
                 ban.seek(0)
                 ban.write(banList)
                 ban.close()
-                exit()
+                shotdown = True
+                sys.exit()
         elif command[0] == commandList[2]:
             if command[1] == my_username or command[1] == "@all":          
                 try:
@@ -88,7 +91,7 @@ def doACommand(command,message,username,my_username):
                 extention = True
             except:
                 extention = False
-            if command[1] == my_username or command[1] == "@all" and extention == False:
+            if (command[1] == my_username or command[1] == "@all") and extention == False:
                 webbrowser.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
 
@@ -99,6 +102,8 @@ def doACommand(command,message,username,my_username):
                 print(f"{username} whispered: \"{command[2]}\" to you")
     except:
         d = 0
+    if shotdown == True:
+        exit()
 # do a command you just sent
 def doACommandYourself(command,message,my_username):
     try:
@@ -192,7 +197,7 @@ while True:
         if e.errno != errno.EAGAIN and e.errno != errno.EWOULDBLOCK:
             print('Reading error: {}'.format(str(e)))
             logging.exception("Exception occurred", e)
-            #sys.exit()
+            sys.exit()
 
         # We just did not receive anything
         continue
@@ -201,4 +206,4 @@ while True:
         # Any other exception - something happened, exit
         print('Reading error: '.format(str(e)))
         logging.exception("Exception occurred", e)
-        #sys.exit()
+        sys.exit()
