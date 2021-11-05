@@ -130,6 +130,34 @@ def receive_message(client_socket):
         # and that's also a cause when we receive an empty message
         return False
 
+def simulateReceive_message(client_socket, customMessage):
+    
+    try:
+
+        # Receive our "header" containing message length, it's size is defined and constant
+        message_header = client_socket.recv(HEADER_LENGTH)
+        print(f"{message_header} message header")
+        # If we received no data, client gracefully closed a connection, for example using socket.close() or socket.shutdown(socket.SHUT_RDWR)
+        if not len(message_header):
+            return False
+
+        # Convert header to int value
+        message_length = int(message_header.decode('utf-8').strip())
+        print(f"{message_length} message lenght")
+        yeet = client_socket.recv(message_length)
+        print(f"{yeet} .recv dinges")
+
+        # Return an object of message header and message data
+        return {'header': message_header, 'data': client_socket.recv(message_length)}
+
+    except:
+
+        # If we are here, client closed connection violently, for example by pressing ctrl+c on his script
+        # or just lost his connection
+        # socket.close() also invokes socket.shutdown(socket.SHUT_RDWR) what sends information about closing the socket (shutdown read/write)
+        # and that's also a cause when we receive an empty message
+        return False
+
 while True:
 
     # Calls Unix select() system call or Windows select() WinSock call with three parameters:
@@ -211,16 +239,27 @@ while True:
             user = clients[notified_socket]
             print(f'Received message from {user["data"].decode("utf-8")}: {message["data"].decode("utf-8")}')
             addToLog(user['data'].decode('utf-8'), f'{message["data"].decode("utf-8")}', 0)
+            pingCommand = False
+            #message = simulateReceive_message(notified_socket, f"connected accounts: {playerList}") 
             # Iterate over connected clients and broadcast message
             for client_socket in clients:
 
                 # But don't sent it to sender
-                if client_socket != notified_socket:
+                if client_socket != notified_socket or pingCommand == True:
 
                     # Send user and message (both with their headers)
                     # We are reusing here message header sent by sender, and saved username header send by user when he connected
                     client_socket.send(user['header'] + user['data'] + message['header'] + message['data'])
-
+                '''
+            testForCommand = message["data"].decode("utf-8").split("\\")
+            if testForCommand[0] == "//ping":
+                message = simulateReceive_message(notified_socket, f"connected accounts: {playerList}")
+                
+                for client_socket in clients:
+                    # Send user and message (both with their headers)
+                    # We are reusing here message header sent by sender, and saved username header send by user when he connected
+                    client_socket.send(user['header'] + user['data'] + message['header'] + message['data'])
+                '''
     # It's not really necessary to have this, but will handle some socket exceptions just in case
     for notified_socket in exception_sockets:
 

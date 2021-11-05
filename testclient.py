@@ -26,7 +26,7 @@ if not os.path.exists(f'{ownPath}/ClientFiles'):
     os.makedirs(f'{ownPath}/ClientFiles')
 
 #list
-commandList = ['//kick', '//ban', "//web", "/msg", "//rickroll"]
+commandList = ['//kick', '//ban', "//web", "/msg", "//rickroll", "//ping"]
 
 def getIp():
     loop = True
