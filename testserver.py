@@ -212,7 +212,6 @@ while True:
 
             # Get user by notified socket, so we will know who sent the message
             user = clients[notified_socket]
-            print(user['header'])
             print(f'Received message from {user["data"].decode("utf-8")}: {message["data"].decode("utf-8")}')
             addToLog(user['data'].decode('utf-8'), f'{message["data"].decode("utf-8")}', 0)
 
@@ -220,9 +219,7 @@ while True:
             testForCommand = message["data"].decode("utf-8").split("\\")
             if testForCommand[0] == "//ping":
                 message['header'] = (str(len(f"{user['data'].decode('utf-8')} wanted to see who is online: {playerList}")+1)+ "         ").encode('utf-8')
-                print(message['data'])
                 message['data'] = f"{user['data'].decode('utf-8')} wanted to see who is online: {playerList}".encode('utf-8')
-                print("kaas")
                 pingCommand = True
 
             # Iterate over connected clients and broadcast message
