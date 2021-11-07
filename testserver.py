@@ -7,8 +7,9 @@ import logging
 
 #####original links in sources.txt######
 
-#get ip
+#standard ip and port
 ip = socket.gethostbyname(socket.gethostname())
+port = 1234
 
 # create log date
 timeOfLaunch = str(datetime.datetime.now())
@@ -21,9 +22,9 @@ timeOfLaunchFixed = f"{timeOfLaunch[0]}.{timeOfLaunch[1]}.{timeOfLaunch[2]}"
 ownPath = pathlib.Path().resolve()
 
 #create log name
-LOG_FILENAME = f"{ownPath}/ServerFiles/log-{timeOfLaunchFixed}.log"
+LOG_FILENAME = f"{ownPath}/ServerFiles/Logs/log-{timeOfLaunchFixed}.log"
 
-#create log folder if it doesn't exist
+#create ServerFiles folder if it doesn't exist
 if not os.path.exists(f'{ownPath}/ServerFiles'):
     os.makedirs(f'{ownPath}/ServerFiles')
 
@@ -41,24 +42,42 @@ if os.path.isfile(f"{ownPath}/ServerFiles/.Setting.txt"):
     settings = open(f"{ownPath}/ServerFiles/.Setting.txt", "r+")
 else:
     settings = open(f"{ownPath}/ServerFiles/.Setting.txt", "x")
-    settings.write("#if you leave empty lines, of with other characters(unless the line starts with #, then it is okay), the program will choose by itself\n#do you want to save logs? then put 'True' on the next line, if not, put 'False' on the next line without a #\nFalse\n#do you want a password? then put 'True' on the next line, if not, put 'False' on the next line without a #\nFalse\n#do you want custom IP adress (will probably do nothing) then put the IP next line (example: 127.0.1.1) if not, type 'False'\nFalse\n#Do you want custom Port? if yes, type the port next line (example: 1234) if not, type 'False'\nFalse")
+    settings.write("#if you leave empty lines, of with other characters(unless the line starts with #, then it is okay), the program will choose by itself\n#\n#\n#BE AWARE THAT \"True\" AND \"False\" NEED TO HAVE THE FIRST LETTER CAPITALIZED\n#\n#\n#do you want to save logs? then put 'True' on the next line, if not, put 'False' on the next line without a #\nFalse\n#do you want a password? then put 'True' on the next line, if not, put 'False' on the next line without a #\nFalse\n#do you want custom IP adress (will probably do nothing) then put the IP next line (example: 127.0.1.1) if not, type 'False'\nFalse\n#Do you want custom Port? if yes, type the port next line (example: 1234) if not, type 'False'\nFalse")
 settings.close()
 
 #check the settings
 settings = open(f"{ownPath}/ServerFiles/.Setting.txt", "r")
 settingsNotSplitted = settings.read()
+#split at every enter
 settingsSplitted = settingsNotSplitted.split("\n")
-'''
+#create list with things that aren't comments
 settingsWithoutComments = list()
-for x in range(settingsSplitted):
+#for all lines, if the line starts with a # ignore it, else, add it to the list with settings
+for x in range(len(settingsSplitted)):
     if settingsSplitted[x][0] != "#":
         settingsWithoutComments.append(settingsSplitted[x])
-'''
-def exit_handler():
-    print('My application is ending!')
+try:
+    #if it's true, create a log file
+    if settingsWithoutComments[0] == "True":
+        makeLog = True
+    else:
+        makeLog = False
+    #if not false, use the input as IP adress
+    if settingsWithoutComments[2] != "False":
+        ip = settingsWithoutComments[2]
+    #if not false, use the input as the Port
+    if settingsWithoutComments[3] != "False":
+        port = settingsWithoutComments[3]
+except:
+    input(f"There is a problem with \"{ownPath}/ServerFiles/.Setting.txt\" Go fix it, or Delete it\nPress Enter to close")
+    exit()
 
-makeLog = True
+
+
 if makeLog == True:
+    #create log folder if it doesn't exist
+    if not os.path.exists(f'{ownPath}/ServerFiles/Logs'):
+        os.makedirs(f'{ownPath}/ServerFiles/Logs')
     #setup log file
     logging.basicConfig(filename=LOG_FILENAME ,level=logging.DEBUG)
 
@@ -87,7 +106,7 @@ playerList = list()
 HEADER_LENGTH = 10
 
 IP = ip
-PORT = 1234
+PORT = port
 # Create a socket
 # socket.AF_INET - address family, IPv4, some otehr possible are AF_INET6, AF_BLUETOOTH, AF_UNIX
 # socket.SOCK_STREAM - TCP, conection-based, socket.SOCK_DGRAM - UDP, connectionless, datagrams, socket.SOCK_RAW - raw IP packets
