@@ -48,7 +48,12 @@ settings.close()
 settings = open(f"{ownPath}/ServerFiles/.Setting.txt", "r")
 settingsNotSplitted = settings.read()
 settingsSplitted = settingsNotSplitted.split("\n")
-
+'''
+settingsWithoutComments = list()
+for x in range(settingsSplitted):
+    if settingsSplitted[x][0] != "#":
+        settingsWithoutComments.append(settingsSplitted[x])
+'''
 def exit_handler():
     print('My application is ending!')
 
@@ -57,8 +62,9 @@ if makeLog == True:
     #setup log file
     logging.basicConfig(filename=LOG_FILENAME ,level=logging.DEBUG)
 
+#it adds messages to log file
 def addToLog(username, message = "", action = 0):
-    
+    #check if the settings are set to: pls create a log for me
     if makeLog == True:
         if action == 0:
             logging.info(f"{username} did say \"{message}\"  {datetime.datetime.now()}")
@@ -66,6 +72,8 @@ def addToLog(username, message = "", action = 0):
             logging.critical(f"{username} just landed  {datetime.datetime.now()}")
         elif action == 2:
             logging.critical(f"{username} wanted to get the fuck outta here  {datetime.datetime.now()}")
+        if action == 3:
+            logging.debug(f"{message} {datetime.datetime.now()}")
     f = open(f"{ownPath}/ServerFiles/log-{timeOfLaunchFixed}.log", 'rt')
     try:
         body = f.read()
@@ -213,19 +221,32 @@ while True:
             # Get user by notified socket, so we will know who sent the message
             user = clients[notified_socket]
             print(f'Received message from {user["data"].decode("utf-8")}: {message["data"].decode("utf-8")}')
-            addToLog(user['data'].decode('utf-8'), f'{message["data"].decode("utf-8")}', 0)
-
+            #define the pingcommand
             pingCommand = False
+            #define username
+            username = user['data'].decode('utf-8')
+            #check if it is a command
             testForCommand = message["data"].decode("utf-8").split("\\")
             if testForCommand[0] == "//ping":
-                message['header'] = (str(len(f"{user['data'].decode('utf-8')} wanted to see who is online: {playerList}")+1)+ "         ").encode('utf-8')
-                message['data'] = f"{user['data'].decode('utf-8')} wanted to see who is online: {playerList}".encode('utf-8')
+                #get length of custom message
+                customMessageLenght = (str(len(f"{user['data'].decode('utf-8')} wanted to see who is online: {playerList}")))
+                #if lengthe of number of lenght not long enough, add spaces
+                for x in range(HEADER_LENGTH - len(customMessageLenght)):
+                    customMessageLenght += " "
+                #change things that are needed to send custom message
+                message['header'] = customMessageLenght.encode('utf-8')
+                message['data'] = f"{username} wanted to see who is online: {playerList}".encode('utf-8')
+                #add the ping to the log
+                addToLog(username, f"{username} wanted to see who is online: {playerList}", 3)
+                #say that it is a ping command
                 pingCommand = True
+            else:
+                addToLog(username, f'{message["data"].decode("utf-8")}', 0)
 
             # Iterate over connected clients and broadcast message
             for client_socket in clients:
     
-                # But don't sent it to sender
+                # But don't sent it to sender unless it is a ping command
                 if client_socket != notified_socket or pingCommand == True:
     
                     # Send user and message (both with their headers)
