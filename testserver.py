@@ -37,8 +37,12 @@ else:
     ban = open(f"{ownPath}/ServerFiles/bans.png", "x") 
 ban.close()
 
+
 #open settings
 if os.path.isfile(f"{ownPath}/ServerFiles/.Setting.txt"):
+    settings = open(f"{ownPath}/ServerFiles/.Setting.txt", "r+")
+elif os.path.isfile(f"{ownPath}/ServerFiles/Setting.txt"):
+    os.rename(f"{ownPath}/ServerFiles/Setting.txt", f"{ownPath}/ServerFiles/.Setting.txt")
     settings = open(f"{ownPath}/ServerFiles/.Setting.txt", "r+")
 else:
     settings = open(f"{ownPath}/ServerFiles/.Setting.txt", "x")
@@ -93,11 +97,7 @@ def addToLog(username, message = "", action = 0):
             logging.critical(f"{username} wanted to get the fuck outta here  {datetime.datetime.now()}")
         if action == 3:
             logging.debug(f"{message} {datetime.datetime.now()}")
-    f = open(f"{ownPath}/ServerFiles/log-{timeOfLaunchFixed}.log", 'rt')
-    try:
-        body = f.read()
-    finally:
-        f.close()
+
     
 
 # playerlist
