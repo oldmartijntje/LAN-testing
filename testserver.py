@@ -48,7 +48,7 @@ elif os.path.isfile(f"{ownPath}/ServerFiles/Setting.txt"):
 #create .settings.txt
 else:
     settings = open(f"{ownPath}/ServerFiles/.Setting.txt", "x")
-    settings.write("#if you leave empty lines, of with other characters(unless the line starts with #, then it is okay), the program will choose by itself\n#\n#\n#BE AWARE THAT \"True\" AND \"False\" NEED TO HAVE THE FIRST LETTER CAPITALIZED\n#\n#\n#do you want to save logs? then put 'True' on the next line, if not, put 'False' on the next line without a #\nFalse\n#do you want a password? then put 'True' on the next line, if not, put 'False' on the next line without a #\nFalse\n#do you want custom IP adress (will probably do nothing) then put the IP next line (example: 127.0.1.1) if not, type 'False'\nFalse\n#Do you want custom Port? if yes, type the port next line (example: 1234) if not, type 'False'\nFalse")
+    settings.write("#if you leave empty lines, or with other characters(unless the line starts with #, then it is okay), the program will choose by itself\n#\n#\n#BE AWARE THAT \"True\" AND \"False\" NEED TO HAVE THE FIRST LETTER CAPITALIZED\n#\n#\n#do you want to save logs? then put 'True' on the next line, if not, put 'False' on the next line without a #\nFalse\n#do you want a password? then put 'True' on the next line, if not, put 'False' on the next line without a #\nFalse\n#do you want custom IP adress (will probably do nothing) then put the IP next line (example: 127.0.1.1) if not, type 'False'\nFalse\n#Do you want custom Port? if yes, type the port next line (example: 1234) if not, type 'False'\nFalse")
 settings.close()
 
 #check the settings
