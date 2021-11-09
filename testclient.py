@@ -7,9 +7,14 @@ import datetime
 import pathlib
 import logging
 try:
-    from theGoodExtention import *
+    from loggingExtention import *
 except:
     extention = False
+#plugin support
+try:
+    from pluginHandler import *
+except:
+    pluginSupport = False
 
 
 # create log date
@@ -26,7 +31,7 @@ if not os.path.exists(f'{ownPath}/ClientFiles'):
     os.makedirs(f'{ownPath}/ClientFiles')
 
 #list
-commandList = ['//kick', '//ban', "//web", "/msg", "//rickroll", "//ping"]
+commandList = ['//kick', '//ban', "/web", "/msg", "/rickroll", "/ping", "//plugin"]
 
 def getIp():
     loop = True
@@ -49,7 +54,7 @@ IP = ip
 PORT = port
 my_username = input("Username: ")
 
-def doACommand(command,message,username,my_username):
+def doACommand(command,message,username,my_username, message_header, username_header):
     extention = "None"
     shotdown = False
     try:
@@ -73,6 +78,7 @@ def doACommand(command,message,username,my_username):
                 ban.close()
                 shotdown = True
                 sys.exit()
+        #web
         elif command[0] == commandList[2]:
             if command[1] == my_username or command[1] == "@all":          
                 try:
@@ -84,6 +90,7 @@ def doACommand(command,message,username,my_username):
                     webbrowser.open(command[2])
                 elif extention == False:
                     webbrowser.open("https://www.google.com/search?client=opera-gx&q="+command[2]+"&sourceid=opera&ie=UTF-8&oe=UTF-8")
+        #rickroll
         elif command[0] == commandList[4]:
             
             try:
@@ -93,7 +100,10 @@ def doACommand(command,message,username,my_username):
                 extention = False
             if (command[1] == my_username or command[1] == "@all") and extention == False:
                 webbrowser.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
-
+        #plugin
+        elif command[0] == commandList[6]:
+            if pluginSupport == True:
+                plugin(command, message, my_username, username, message_header, username_header)
 
 
         # private message 
@@ -184,7 +194,7 @@ while True:
             # Print message
             command = message.split("\\")
             if command[0] in commandList:
-                doACommand(command,message,username,my_username)
+                doACommand(command,message,username,my_username, message_header, username_header)
             else:
                 print(f'{username} > {message}')
 

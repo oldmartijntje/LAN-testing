@@ -38,12 +38,14 @@ else:
 ban.close()
 
 
-#open settings
+#open settings if .settings.txt exists
 if os.path.isfile(f"{ownPath}/ServerFiles/.Setting.txt"):
     settings = open(f"{ownPath}/ServerFiles/.Setting.txt", "r+")
+#rename settings.txt to .settings.txt if settings.txt exists
 elif os.path.isfile(f"{ownPath}/ServerFiles/Setting.txt"):
     os.rename(f"{ownPath}/ServerFiles/Setting.txt", f"{ownPath}/ServerFiles/.Setting.txt")
     settings = open(f"{ownPath}/ServerFiles/.Setting.txt", "r+")
+#create .settings.txt
 else:
     settings = open(f"{ownPath}/ServerFiles/.Setting.txt", "x")
     settings.write("#if you leave empty lines, of with other characters(unless the line starts with #, then it is okay), the program will choose by itself\n#\n#\n#BE AWARE THAT \"True\" AND \"False\" NEED TO HAVE THE FIRST LETTER CAPITALIZED\n#\n#\n#do you want to save logs? then put 'True' on the next line, if not, put 'False' on the next line without a #\nFalse\n#do you want a password? then put 'True' on the next line, if not, put 'False' on the next line without a #\nFalse\n#do you want custom IP adress (will probably do nothing) then put the IP next line (example: 127.0.1.1) if not, type 'False'\nFalse\n#Do you want custom Port? if yes, type the port next line (example: 1234) if not, type 'False'\nFalse")
@@ -246,7 +248,7 @@ while True:
             username = user['data'].decode('utf-8')
             #check if it is a command
             testForCommand = message["data"].decode("utf-8").split("\\")
-            if testForCommand[0] == "//ping":
+            if testForCommand[0] == "/ping":
                 #get length of custom message
                 customMessageLenght = (str(len(f"{user['data'].decode('utf-8')} wanted to see who is online: {playerList}")))
                 #if lengthe of number of lenght not long enough, add spaces
