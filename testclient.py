@@ -18,7 +18,8 @@ try:
 except:
     pluginSupport = False
 
-
+passwordInfo = [False, "missing key", 0, False]
+pendingMessages = list()
 # create log date
 timeOfLaunch = str(datetime.datetime.now())
 #split because there can't be : in a file name
@@ -33,7 +34,7 @@ if not os.path.exists(f'{ownPath}/ClientFiles'):
     os.makedirs(f'{ownPath}/ClientFiles')
 
 #list
-commandList = ['//kick', '//ban', "/web", "/msg", "/rickroll", "/ping", "//plugin"]
+commandList = ['//kick', '//ban', "/web", "/msg", "/rickroll", "/ping", "//plugin", "Oda5%%UGqhodajhciiuq3_Voa?zC0Gle1"]
 
 #open settings if .settings.txt exists
 if os.path.isfile(f"{ownPath}/ClientFiles/.Setting.txt"):
@@ -122,7 +123,8 @@ PORT = port
 if my_username == "":
     my_username = input("Username: ")
 
-def doACommand(command,message,username,my_username, message_header, username_header):
+def doACommand(command,message,username,my_username, message_header, username_header, passwordInfo):
+    passwordInfo[2] += 1
     extention = "None"
     shotdown = False
     try:
@@ -173,16 +175,29 @@ def doACommand(command,message,username,my_username, message_header, username_he
         elif command[0] == commandList[6]:
             if pluginSupport == True:
                 plugin(command, message, my_username, username, message_header, username_header)
-
+        #password
+        elif command[0] == commandList[7]:
+            if command[1] == my_username and passwordInfo[0] == False:
+                passwordInfo[3] = True
+                passwordInfo[2] -= 1
+                try:
+                    if command[2] == passwordInfo[1]:
+                        passwordInfo[0] = True
+                        print("password accepted")
+                    else:
+                        print(f"please enter the password: /password\\ThePassword")
+                except:
+                    print(f"please enter the password: /password\\ThePassword")
 
         # private message 
-        if command[0] == commandList[3]:
+        elif command[0] == commandList[3]:
             if command[1] == my_username:
                 print(f"{username} whispered: \"{command[2]}\" to you")
     except:
         d = 0
     if shotdown == True:
         exit()
+    return passwordInfo
 # do a command you just sent
 def doACommandYourself(command,message,my_username):
     try:
@@ -194,6 +209,9 @@ def doACommandYourself(command,message,my_username):
                 message_header = f"{len(message):<{HEADER_LENGTH}}".encode('utf-8')
                 client_socket.send(message_header + message)
                 exit()
+        #password
+        elif command[0] == commandList[7]:
+            passwordInfo[1] = command[1]
 
 
 
@@ -203,6 +221,7 @@ def doACommandYourself(command,message,my_username):
             print(f"you whispered: \"{command[2]}\" to {command[1]}")
     except:
         ww = 8
+    return passwordInfo
 
 
 # Create a socket
@@ -228,16 +247,19 @@ while True:
     message = input(f'{my_username} > ')
     command = message.split("\\")
     if command[0] in commandList:
-        doACommandYourself(command,message,my_username)
+        passwordInfo = doACommandYourself(command,message,my_username)
 
     # If message is not empty - send it
     if message:
-
+        originalMessage = message
         # Encode message to bytes, prepare header and convert to bytes, like for username above, then send
         message = message.encode('utf-8')
         message_header = f"{len(message):<{HEADER_LENGTH}}".encode('utf-8')
         client_socket.send(message_header + message)
-
+    if message != "":
+        splitMessage = originalMessage.split("\\")
+        if splitMessage[0] != commandList[7] and passwordInfo[2] <= 3:
+            passwordInfo[2] += 1
     try:
         # Now we want to loop over received messages (there might be more than one) and print them
         while True:
@@ -259,13 +281,31 @@ while True:
             message_header = client_socket.recv(HEADER_LENGTH)
             message_length = int(message_header.decode('utf-8').strip())
             message = client_socket.recv(message_length).decode('utf-8')
-
+            
+            if passwordInfo[2] > 5 and passwordInfo[3] == False:
+                passwordInfo[0] = True
+                for x in range(len(pendingMessages)):
+                    command = pendingMessages[0].split("\\")
+                if command[0] in commandList:
+                    e = 0
+                else:
+                    try:
+                        print(pendingMessages[0])
+                    except:
+                        e =5
+                    pendingMessages.pop(0)
+                    
+                    
+            
             # Print message
             command = message.split("\\")
             if command[0] in commandList:
-                doACommand(command,message,username,my_username, message_header, username_header)
+                passwordInfo = doACommand(command,message,username,my_username, message_header, username_header, passwordInfo)
             else:
-                print(f'{username} > {message}')
+                if passwordInfo[0] == False and passwordInfo[2] > 5:
+                    pendingMessages.append(f'{username} > {message}')
+                else:
+                    print(f'{username} > {message}')
 
     except IOError as e:
         # This is normal on non blocking connections - when there are no incoming data error is going to be raised

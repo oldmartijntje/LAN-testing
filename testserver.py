@@ -68,6 +68,10 @@ try:
         makeLog = True
     else:
         makeLog = False
+    #check for password
+    password = False
+    if settingsWithoutComments[1] != "False":
+        password = settingsWithoutComments[1]
     #if not false, use the input as IP adress
     if settingsWithoutComments[2] != "False":
         ip = settingsWithoutComments[2]
@@ -97,13 +101,75 @@ def addToLog(username, message = "", action = 0):
             logging.critical(f"{username} just landed  {datetime.datetime.now()}")
         elif action == 2:
             logging.critical(f"{username} wanted to get the fuck outta here  {datetime.datetime.now()}")
-        if action == 3:
+        elif action == 3:
             logging.debug(f"{message} {datetime.datetime.now()}")
+        elif action == 4:
+            logging.critical(f"{message} {datetime.datetime.now()}")
 
-    
+def commandCheck(check, user, playerList, playerListData):
+    command = False
+    pingCommand = False
+    if check[0] == "/ping":
+        customMessage = f"{username} wanted to see who is online: {playerList}"
+        #get length of custom message
+        customMessageLenght = (str(len(customMessage)))
+        #if lengthe of number of lenght not long enough, add spaces
+        for x in range(HEADER_LENGTH - len(customMessageLenght)):
+            customMessageLenght += " "
+        #change things that are needed to send custom message
+        message['header'] = customMessageLenght.encode('utf-8')
+        message['data'] = customMessage.encode('utf-8')
+        #add the ping to the log
+        addToLog(username, customMessage, 3)
+        #say that it is a ping command
+        pingCommand = True
+        command = True
+    #send password command
+    if check[0] == "/password" and password != False:
+        if check[1] == password:
+            for x in range(len(playerList)):
+                if playerList[x] == user:
+                    playerListData[x] == "True"
+                    addToLog(username, f"{username} entered the password correctly", 3)
+                command = True
+        else:
+            customMessage = f"//kick\\{username}"
+            #get length of custom message
+            customMessageLenght = (str(len(customMessage)))
+            #if lengthe of number of lenght not long enough, add spaces
+            for x in range(HEADER_LENGTH - len(customMessageLenght)):
+                customMessageLenght += " "
+            #change things that are needed to send custom message
+            message['header'] = customMessageLenght.encode('utf-8')
+            message['data'] = customMessage.encode('utf-8')
+            #add the ping to the log
+            addToLog(username, f"{username} had the password wrong and got kicked", 3)
+            #say that it is a ping command
+            pingCommand = True
+            command = True
+            
+    return [command, pingCommand, playerListData], message
+
+def sendPasswordRequest(testForCommand, username, playerList, playerListData):
+    customMessage = f"Oda5%%UGqhodajhciiuq3_Voa?zC0Gle1\\{username}"
+    #get length of custom message
+    customMessageLenght = (str(len(customMessage)))
+    #if lengthe of number of lenght not long enough, add spaces
+    for x in range(HEADER_LENGTH - len(customMessageLenght)):
+        customMessageLenght += " "
+    #change things that are needed to send custom message
+    message['header'] = customMessageLenght.encode('utf-8')
+    message['data'] = customMessage.encode('utf-8')
+    #add the ping to the log
+    addToLog(username, f"{username} needs to enter the password before he could talk", 3)
+    #say that it is a ping command
+    pingCommand = True
+    command = True
+    return [command, pingCommand, playerListData], message
 
 # playerlist
 playerList = list()
+playerListData = list()
 
 HEADER_LENGTH = 10
 
@@ -206,11 +272,11 @@ while True:
             
             # save user to the user list
             playerList.append(user['data'].decode('utf-8'))
-
+            playerListData.append("False")
             # Also save username and username header
             print('Accepted new connection from {}:{}, username: {}'.format(*client_address, user['data'].decode('utf-8')))
             addToLog(user['data'].decode('utf-8'), "", action = 1)
-
+            
         # Else existing socket is sending a message
         else:
 
@@ -228,6 +294,9 @@ while True:
 
                 # remove user from user list
                 try:
+                    for x in range(len(playerList)):
+                        if playerList[x] == clients[notified_socket]['data'].decode('utf-8'):
+                            playerListData.pop(x)
                     playerList.remove(clients[notified_socket]['data'].decode('utf-8'))
                 except:
                     e = 0
@@ -248,22 +317,26 @@ while True:
             username = user['data'].decode('utf-8')
             #check if it is a command
             testForCommand = message["data"].decode("utf-8").split("\\")
-            if testForCommand[0] == "/ping":
-                #get length of custom message
-                customMessageLenght = (str(len(f"{user['data'].decode('utf-8')} wanted to see who is online: {playerList}")))
-                #if lengthe of number of lenght not long enough, add spaces
-                for x in range(HEADER_LENGTH - len(customMessageLenght)):
-                    customMessageLenght += " "
-                #change things that are needed to send custom message
-                message['header'] = customMessageLenght.encode('utf-8')
-                message['data'] = f"{username} wanted to see who is online: {playerList}".encode('utf-8')
-                #add the ping to the log
-                addToLog(username, f"{username} wanted to see who is online: {playerList}", 3)
-                #say that it is a ping command
-                pingCommand = True
-            else:
+            #check for commands
+            returnedValues, message = commandCheck(testForCommand, username, playerList, playerListData)
+            #say if there was a command    
+            if returnedValues[0] == False:
+                passwordEntered = False
                 addToLog(username, f'{message["data"].decode("utf-8")}', 0)
-
+                for x in range(len(playerList)):
+                    if playerList[x] == username:
+                        print(playerListData)
+                        if playerListData[x] == "True" or password == False:
+                            passwordEntered = True
+                            print("false")
+                        else:
+                            returnedValues, message = sendPasswordRequest(testForCommand, username, playerList, playerListData)
+                            pingCommand = True
+                            print("true")
+                        
+            pingCommand = returnedValues[1]
+            playerListData = returnedValues[2]
+            
             # Iterate over connected clients and broadcast message
             for client_socket in clients:
     
