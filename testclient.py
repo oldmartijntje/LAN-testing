@@ -2,7 +2,7 @@ import socket
 import errno
 import sys
 import pathlib
-import logging
+
 
 
 #get the programs path
@@ -111,7 +111,6 @@ while True:
         # If we got different error code - something happened
         if e.errno != errno.EAGAIN and e.errno != errno.EWOULDBLOCK:
             print('Reading error: {}'.format(str(e)))
-            logging.exception("Exception occurred", e)
             sys.exit()
 
         # We just did not receive anything
@@ -120,5 +119,4 @@ while True:
     except Exception as e:
         # Any other exception - something happened, exit
         print('Reading error: '.format(str(e)))
-        logging.exception("Exception occurred", e)
         sys.exit()
