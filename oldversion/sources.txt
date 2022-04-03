@@ -1,0 +1,7 @@
+original versions of:
+testclient.py
+and
+testserver.py
+by
+https://pythonprogramming.net/server-chatroom-sockets-tutorial-python-3/
+https://www.youtube.com/watch?v=CV7_stUWvBQ

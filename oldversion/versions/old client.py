@@ -1,18 +1,9 @@
 import socket
+import select
 import errno
 import sys
-import pathlib
-import logging
-
-
-#get the programs path
-ownPath = pathlib.Path().resolve()
-#create log folder if it doesn't exist
-
-
-#list
-commandList = ["//ping"]
-
+commandList = ['kick','ban']
+#original links in sources.txt
 def getIp():
     loop = True
     while loop == True:
@@ -35,12 +26,12 @@ PORT = port
 my_username = input("Username: ")
 
 def doACommand(command,message,username,my_username):
-    pass
-    
-# do a command you just sent
-def doACommandYourself(command,message,my_username):
-    pass
-
+    if command[0] == 'kick':
+        if command[1] == my_username:
+            exit()
+    if command[0] == 'ban':
+        if command[1] == my_username:
+            exit()
 
 # Create a socket
 # socket.AF_INET - address family, IPv4, some otehr possible are AF_INET6, AF_BLUETOOTH, AF_UNIX
@@ -63,9 +54,6 @@ while True:
 
     # Wait for user to input a message
     message = input(f'{my_username} > ')
-    command = message.split("\\")
-    if command[0] in commandList:
-        doACommandYourself(command,message,my_username)
 
     # If message is not empty - send it
     if message:
@@ -78,6 +66,7 @@ while True:
     try:
         # Now we want to loop over received messages (there might be more than one) and print them
         while True:
+
             # Receive our "header" containing username length, it's size is defined and constant
             username_header = client_socket.recv(HEADER_LENGTH)
 
@@ -98,11 +87,11 @@ while True:
             message = client_socket.recv(message_length).decode('utf-8')
 
             # Print message
-            command = message.split("\\")
+            command = message.split("/")
             if command[0] in commandList:
                 doACommand(command,message,username,my_username)
-            else:
-                print(f'{username} > {message}')
+
+            print(f'{username} > {message}')
 
     except IOError as e:
         # This is normal on non blocking connections - when there are no incoming data error is going to be raised
@@ -111,7 +100,6 @@ while True:
         # If we got different error code - something happened
         if e.errno != errno.EAGAIN and e.errno != errno.EWOULDBLOCK:
             print('Reading error: {}'.format(str(e)))
-            logging.exception("Exception occurred", e)
             sys.exit()
 
         # We just did not receive anything
@@ -120,5 +108,4 @@ while True:
     except Exception as e:
         # Any other exception - something happened, exit
         print('Reading error: '.format(str(e)))
-        logging.exception("Exception occurred", e)
         sys.exit()
