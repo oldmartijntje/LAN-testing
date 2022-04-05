@@ -57,7 +57,7 @@ if hostOrClient == 'Host':
             on_closing()
         else:
             break
-
+    users = {}
 
     '''
     messagesList = ['Hosting....']
@@ -124,6 +124,35 @@ if hostOrClient == 'Host':
     clients = {}
 
     print(f'Listening for connections on {IP}:{PORT}...')
+    def sendMessage(text,name, adress = 'NONE'):
+        global user,message
+        #get length of custom message
+        customMessageLenght = (str(len(f"{text}")))
+        #if lengthe of number of lenght not long enough, add spaces
+        for x in range(HEADER_LENGTH - len(customMessageLenght)):
+            customMessageLenght += " "
+        #change things that are needed to send custom message
+        message['header'] = customMessageLenght.encode('utf-8')
+        message['data'] = f"{text}".encode('utf-8')
+
+        #get length of custom name
+        customMessageLenght = (str(len(f"{name}")))
+        #if lengthe of number of lenght not long enough, add spaces
+        for x in range(HEADER_LENGTH - len(customMessageLenght)):
+            customMessageLenght += " "
+        #change things that are needed to send custom message
+        user['header'] = customMessageLenght.encode('utf-8')
+        user['data'] = f"{name}".encode('utf-8')
+        if adress != 'NONE':
+            adress.send(user['header'] + user['data'] + message['header'] + message['data'])
+        else:
+            for client_socket in clients:
+                # But don't sent it to sender unless it is a ping command
+                if client_socket != notified_socket or adress == 'ALL':
+                    # Send user and message (both with their headers)
+                    # We are reusing here message header sent by sender, and saved username header send by user when he connected
+                    client_socket.send(user['header'] + user['data'] + message['header'] + message['data'])
+
 
     # Handles message receiving
     def receive_message(client_socket):
@@ -190,7 +219,25 @@ if hostOrClient == 'Host':
                 playerList.append(user['data'].decode('utf-8'))
 
                 # Also save username and username header
-                print('Accepted new connection from {}:{}, username: {}'.format(*client_address, user['data'].decode('utf-8')))
+
+                if user['data'].decode('utf-8') not in users:
+                    users[user['data'].decode('utf-8')] = str(client_socket)
+                    print('Accepted new connection from {}:{}, username: {}'.format(*client_address, user['data'].decode('utf-8')))
+                elif users[user['data'].decode('utf-8')] == 'DISCONNECTED':
+                    users[user['data'].decode('utf-8')] = str(client_socket)
+                    print('Accepted rejoin connection from {}:{}, username: {}'.format(*client_address, user['data'].decode('utf-8')))
+                else:
+                    print('Connection from {}:{} tried to login as: {} but was already taken'.format(*client_address, user['data'].decode('utf-8')))
+                    try:
+                        playerList.remove(clients[client_socket]['data'].decode('utf-8'))
+                    except:
+                        e = 0
+                    # Remove from list for socket.socket()
+                    sockets_list.remove(client_socket)
+
+                    # Remove from our list of users
+                    del clients[client_socket]
+                    sendMessage('HEHE', 'kaas', client_socket)
 
 
             # Else existing socket is sending a message
@@ -206,7 +253,8 @@ if hostOrClient == 'Host':
                 if message is False:
                     
                     print('Closed connection from: {}'.format(clients[notified_socket]['data'].decode('utf-8')))
-
+                    users[clients[notified_socket]['data'].decode('utf-8')] = 'DISCONNECTED'
+                    print(users)
 
                     # remove user from user list
                     try:
@@ -268,6 +316,8 @@ if hostOrClient == 'Host':
             del clients[notified_socket]
 
 if hostOrClient == 'Client':
+    if "UserID" not in data:
+        showerror(windowTitles,'Outdated account. You need to update it to use this multiplayer function')
     #get the programs path
     ownPath = pathlib.Path().resolve()
     #create log folder if it doesn't exist
@@ -278,9 +328,12 @@ if hostOrClient == 'Client':
 
 
     def reUse():
+        connect()
+        '''
         Ip_name_var.set('')
         label.configure(text='Username: ')
         startButton.configure(command=connect)
+        '''
 
     def nextStep():
         global ip, port
@@ -362,9 +415,19 @@ if hostOrClient == 'Client':
 
     # Prepare username and header and send them
     # We need to encode username to bytes, then count number of bytes and prepare header of fixed size, that we encode to bytes as well
+
+    my_username = data["UserID"]
     username = my_username.encode('utf-8')
     username_header = f"{len(username):<{HEADER_LENGTH}}".encode('utf-8')
     client_socket.send(username_header + username)
+    
+    message = ''
+    message = message.encode('utf-8')
+    message_header = f"{len(message):<{HEADER_LENGTH}}".encode('utf-8')
+    client_socket.send(message_header + message)
+
+
+
 
 
     def sendMessage():
@@ -374,7 +437,7 @@ if hostOrClient == 'Client':
 
             messagesList.insert(0,f'{my_username} > {message}')
             print(f'{my_username} > {message}')
-            changeMessage()
+            changeShowingMessage()
 
             # Encode message to bytes, prepare header and convert to bytes, like for username above, then send
             message = message.encode('utf-8')
@@ -410,7 +473,7 @@ if hostOrClient == 'Client':
                     doACommand(command,message,username,my_username)
                 else:
                     messagesList.insert(0,f'{username} > {message}')
-                    changeMessage()
+                    changeShowingMessage()
                     print(f'{username} > {message}')
 
         except IOError as e:
@@ -438,7 +501,7 @@ if hostOrClient == 'Client':
 
 
     messagesList = ['Connected']
-    def changeMessage(*args):
+    def changeShowingMessage(*args):
         messages_var.set(messagesList[0])
         messages.configure(values=messagesList)
 
@@ -454,8 +517,8 @@ if hostOrClient == 'Client':
     messages = ttk.Combobox(clientWindow, textvariable=messages_var,values=messagesList, state='readonly') #values =messagesList
     messages.grid(column=0, row=2, ipadx=20, ipady=10, sticky="EW", columnspan=2)
     clientWindow.protocol("WM_DELETE_WINDOW", on_closing)
-    message_var.trace('w', changeMessage)
-    changeMessage()
+    message_var.trace('w', changeShowingMessage)
+    changeShowingMessage()
     
     def tick():
         receive()
