@@ -1,17 +1,29 @@
 import tkinter
 from tkinter import ttk
+import accounts_omac
 import socket
 import errno
 import sys
 import pathlib
 import select
 from tkinter.messagebox import showinfo, askyesno, showerror
+configSettings = accounts_omac.configFileTkinter()
+data = accounts_omac.defaultConfigurations.defaultLoadingTkinter(configSettings)
+if data == False:
+    exit()
+
 
 windowTitles = 'omac_LAN'
+def close():
+    global data
+    data = accounts_omac.saveAccount(data, configSettings)
+    exit()
+
 
 def on_closing(windowTitles = 'omac_LAN'):
+    global data
     if askyesno(windowTitles, f"Your program will be terminated\nShould we proceed?", icon ='warning'):
-        exit()
+        close()
 
 
 hostOrClientWindow = tkinter.Tk()
@@ -292,7 +304,7 @@ if hostOrClient == 'Client':
         except:
             pass
         showerror(windowTitles,f'{message}')
-        exit()
+        close()
 
     def connectWindow():
         global Ip_name_var, clientConnectWindow, label,startButton
@@ -341,7 +353,7 @@ if hostOrClient == 'Client':
         client_socket.connect((IP, PORT))
     except Exception as e:
         showerror(windowTitles,f'Server did not respond back.\nWe will reopen the IP input screen.\nFull error:\n{e}')
-        exit()
+        close()
 
 
 

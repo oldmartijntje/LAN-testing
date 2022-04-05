@@ -1,11 +1,52 @@
 
-version = '2.5.0'
+version = '2.6.3'
 #code made by OldMartijntje
 
-def on_closing(windowTitles = 'Accounts_omac_lib'):
-    import tkinter.messagebox
-    if tkinter.messagebox.askokcancel(windowTitles, f"Your program will be terminated\nShould we proceed?", icon ='warning'):
-        exit()
+#functions u don't need, bacause it's just to make the system work
+class systemFunctions:
+    def userID(name):
+        '''Create UserID'''
+        from datetime import datetime
+        now = datetime.now()
+        UID = f'{easy.stringToAscii(now.strftime("%H:%M:%S"))}x{(easy.stringToAscii(f"{name}")+1)//2 +easy.stringToAscii(now.strftime("%m/%d/%Y"))}'
+        return UID
+
+    def on_closing():
+        '''What happens when you close an account system tkinter window, this will not save your account data'''
+        import tkinter.messagebox
+        if tkinter.messagebox.askyesno('Accounts_omac_lib', f"Your program will be terminated\nShould we proceed?", icon ='warning'):
+            exit()
+
+    def updateRequest():
+        '''Asks user for confirmation to update their account, the system only asks you when something new is added to the account itself and not the system'''
+        import tkinter.messagebox
+        return tkinter.messagebox.askyesno('Accounts_omac_lib', f"Your account is outdated, Do you want us to update your account?\nYou will keep getting this message if you load newer apps unless you update", icon ='warning')
+
+    def CAFU(accountData):
+        '''Check Account For Update, and if there is an update, it will ask you to update'''
+        
+        if 'UserID' not in accountData:#2.6.0
+            if systemFunctions.updateRequest():
+                UID = systemFunctions.userID(accountData['name'])
+                accountData['UserID'] = UID
+        return accountData
+
+    def checkVersion(account_version, system_version = version):
+        '''Check if version is lower'''
+        splittedAccountVersion = account_version.split('.')
+        splittedSystemVersion = system_version.split('.')
+        biggerOrSmaller = False
+        bigger = False
+        for x in range(min([len(splittedAccountVersion),len(splittedSystemVersion)])):
+            if biggerOrSmaller == False:
+                if splittedAccountVersion[x] != splittedSystemVersion[x]:
+                    biggerOrSmaller = True
+                    if int(splittedAccountVersion[x]) > int(splittedSystemVersion[x]):
+                        bigger = True
+        if biggerOrSmaller == False or bigger == True:
+            return False
+        else:
+            return True
 
 def configFileConsole(pathLocation = False):
     '''creates or reads config file (consoleApp) 
@@ -83,7 +124,7 @@ def configFileTkinter(pathLocation = False):
                 path_entry = tkinter.Entry(window, textvariable= path_var)
                 path_entry.grid(column=0, row=1, ipadx=20, ipady=10, sticky="EW")
                 ttk.Button(window,text='Continue',command=chosenPath).grid(column=0, row=2, ipadx=20, ipady=10, sticky="EW")
-                window.protocol("WM_DELETE_WINDOW", on_closing)
+                window.protocol("WM_DELETE_WINDOW", systemFunctions.on_closing)
                 window.mainloop()
                 folder = folderr
 
@@ -108,7 +149,7 @@ def configFileTkinter(pathLocation = False):
         autoLoginName = config['User']['AccountName']
     except:
         import tkinter.messagebox
-        if tkinter.messagebox.askokcancel('Config Error!', 'There is a problem when we try to open your settings\nWe will close the program after you click this message away\n\nPress \'OK\' if you want us to delete the configfile (systemConfig.ini) for you,\notherwise you will have to fix it yourself', icon ='error'):
+        if tkinter.messagebox.askyesno('Config Error!', 'There is a problem when we try to open your settings\nWe will close the program after you click this message away\n\nDo you want us to delete the configfile (systemConfig.ini) for you,\notherwise you will have to fix it yourself', icon ='error'):
             os.remove("systemConfig.ini")
         exit()
     autoLoginName = autoLoginName.replace(" ", "")
@@ -122,7 +163,8 @@ def loadAccount(accountName = 'testaccount', configSettings = ['accounts/', 'Fal
     '''load existing acount'''
     import json
     import datetime
-    path, autoLogin, autoLoginName, fileExtention = configSettings
+    path = configSettings[0]
+    fileExtention = configSettings[3]
     #just loading the json
     with open(f'{path}{accountName.lower()}{fileExtention}.json') as json_file:
         dataString = json.load(json_file)
@@ -131,17 +173,21 @@ def loadAccount(accountName = 'testaccount', configSettings = ['accounts/', 'Fal
         else:
             data= dataString
         data['loadTime'] = datetime.datetime.now()
-    if data['versionHistory'][len(data['versionHistory']) -1] != version:
+    if systemFunctions.checkVersion(data['versionHistory'][len(data['versionHistory']) -1]):
+        data = systemFunctions.CAFU(data)
         data['versionHistory'].append(version)
+    
     return data
 
 def createAccount(accountName = 'testaccount', configSettings = ['accounts/', 'False', 'testaccount', '_omac']):
     '''create the account (will wipe existing data!!!)'''
     import json
     import datetime
-    path, autoLogin, autoLoginName, fileExtention = configSettings
+    path = configSettings[0]
+    fileExtention = configSettings[3]
     today = datetime.datetime.today()
-    data = {'name': accountName, 'nickname': accountName, 'time': [0,'0'], 'versionHistory':[version], 'appData':{}, 'collectables':{}, 'achievements':{}, 'loadTime':0}
+    UID = systemFunctions.userID(accountName)
+    data = {'name': accountName, 'nickname': accountName, 'time': [0,'0'], 'versionHistory':[version], 'appData':{}, 'collectables':{}, 'achievements':{}, 'loadTime':0, 'UserID':UID}
     
 
     #creating the json
@@ -155,7 +201,8 @@ def saveAccount(data, configSettings = ['accounts/', 'False', 'testaccount', '_o
     '''saves the account back to the json, will return data for when you want to keep using the data'''
     import json
     import datetime
-    path, autoLogin, autoLoginName, fileExtention = configSettings
+    path = configSettings[0]
+    fileExtention = configSettings[3]
     now = datetime.datetime.now()
     timePlayed = ((now - data['loadTime']).total_seconds()) // 1
     data['loadTime'] = 0
@@ -170,7 +217,8 @@ def saveAccount(data, configSettings = ['accounts/', 'False', 'testaccount', '_o
 def checkForAccount(accountName = 'testaccount', configSettings = ['accounts/', 'False', 'testaccount', '_omac']):
     '''check if the account exists'''
     import os
-    path, autoLogin, autoLoginName, fileExtention = configSettings
+    path = configSettings[0]
+    fileExtention = configSettings[3]
     if os.path.exists(f'{path}{accountName.lower()}{fileExtention}.json'):#check if account exists
         return True
     else:
@@ -190,7 +238,8 @@ def removeCharacters(name, removeCharacters = []):
 
 def askAccountNameConsole(configSettings = ['accounts/', 'False', 'testaccount', '_omac'], text = 'please give username\n>'):
     '''simply asks input for an account name (console app), returns account name'''
-    path, autoLogin, autoLoginName, fileExtention = configSettings
+    autoLogin = configSettings[1]
+    autoLoginName = configSettings[2]
     #for the autologin
     if autoLogin.lower() == 'true':
         username = autoLoginName
@@ -210,7 +259,8 @@ def askAccountNameTkinter(configSettings = ['accounts/', 'False', 'testaccount',
         username = removeCharacters(nameVar.get())
         if username != '':
             window.destroy()
-    path, autoLogin, autoLoginName, fileExtention = configSettings
+    autoLogin = configSettings[1]
+    autoLoginName = configSettings[2]
     if autoLogin.lower() == 'true':
         username = autoLoginName
     else:
@@ -220,8 +270,8 @@ def askAccountNameTkinter(configSettings = ['accounts/', 'False', 'testaccount',
         tkinter.Label(text = labelText).pack()
         nameEntry = tkinter.Entry(window,textvariable = nameVar, font=('calibre',10,'normal'))
         nameEntry.pack()
-        button = tkinter.Button(window, text = buttonText, command = lambda: click()).pack()
-        window.protocol("WM_DELETE_WINDOW", on_closing)
+        tkinter.Button(window, text = buttonText, command = lambda: click()).pack()
+        window.protocol("WM_DELETE_WINDOW", systemFunctions.on_closing)
         window.mainloop()
         username = removeCharacters(nameVar.get())
     return username
