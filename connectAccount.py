@@ -220,14 +220,14 @@ if hostOrClient == 'Host':
 
                 # Also save username and username header
 
-                if user['data'].decode('utf-8') not in users:
+                if user['data'].decode('utf-8') not in users and user['data'].decode('utf-8') != f'{IP}:{PORT}':
                     users[user['data'].decode('utf-8')] = str(client_socket)
                     print('Accepted new connection from {}:{}, username: {}'.format(*client_address, user['data'].decode('utf-8')))
                 elif users[user['data'].decode('utf-8')] == 'DISCONNECTED':
                     users[user['data'].decode('utf-8')] = str(client_socket)
                     print('Accepted rejoin connection from {}:{}, username: {}'.format(*client_address, user['data'].decode('utf-8')))
-                else:
-                    print('Connection from {}:{} tried to login as: {} but was already taken'.format(*client_address, user['data'].decode('utf-8')))
+                elif user['data'].decode('utf-8') == f'{IP}:{PORT}':
+                    print('Connection rejected {}:{} tried to login as the server IP'.format(*client_address))
                     try:
                         playerList.remove(clients[client_socket]['data'].decode('utf-8'))
                     except:
@@ -237,7 +237,19 @@ if hostOrClient == 'Host':
 
                     # Remove from our list of users
                     del clients[client_socket]
-                    sendMessage('HEHE', 'kaas', client_socket)
+                    sendMessage(f'{user["data"].decode("utf-8")}/kick("can\'t use server IP as name")', f'{IP}:{PORT}', client_socket)
+                else:
+                    print('Connection rejected {}:{} tried to login as: {} but was already taken'.format(*client_address, user['data'].decode('utf-8')))
+                    try:
+                        playerList.remove(clients[client_socket]['data'].decode('utf-8'))
+                    except:
+                        e = 0
+                    # Remove from list for socket.socket()
+                    sockets_list.remove(client_socket)
+
+                    # Remove from our list of users
+                    del clients[client_socket]
+                    sendMessage(f'{user["data"].decode("utf-8")}/kick("User already in lobby")', f'{IP}:{PORT}', client_socket)
 
 
             # Else existing socket is sending a message
@@ -280,13 +292,13 @@ if hostOrClient == 'Host':
                 testForCommand = message["data"].decode("utf-8").split("\\")
                 if testForCommand[0] == "//ping":
                     #get length of custom message
-                    customMessageLenght = (str(len(f"{user['data'].decode('utf-8')} wanted to see who is online: {playerList}")))
+                    customMessageLenght = (str(len(f"online: {playerList}")))
                     #if lengthe of number of lenght not long enough, add spaces
                     for x in range(HEADER_LENGTH - len(customMessageLenght)):
                         customMessageLenght += " "
                     #change things that are needed to send custom message
                     message['header'] = customMessageLenght.encode('utf-8')
-                    message['data'] = f"{username} wanted to see who is online: {playerList}".encode('utf-8')
+                    message['data'] = f"online: {playerList}".encode('utf-8')
 
                     #say that it is a ping command
                     pingCommand = True
@@ -468,13 +480,19 @@ if hostOrClient == 'Client':
                 message = client_socket.recv(message_length).decode('utf-8')
 
                 # Print message
-                command = message.split("\\")
-                if command[0] in commandList:
-                    doACommand(command,message,username,my_username)
-                else:
-                    messagesList.insert(0,f'{username} > {message}')
-                    changeShowingMessage()
-                    print(f'{username} > {message}')
+                if username == f'{IP}:{PORT}':
+                    command = message.split(my_username)
+                    if len(command) > 0:
+                        command = command[1].split('/kick()')
+                        if len(command) > 0:
+                            command = command[1].split(')')
+                            showerror(windowTitles,f'You have been kicked by the host\nReason: {command[0]}')
+                            close()
+
+
+                messagesList.insert(0,f'{username} > {message}')
+                changeShowingMessage()
+                print(f'{username} > {message}')
 
         except IOError as e:
             # This is normal on non blocking connections - when there are no incoming data error is going to be raised
