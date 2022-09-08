@@ -1,5 +1,5 @@
 
-version = '2.6.3'
+version = '2.7.0'
 #code made by OldMartijntje
 
 #functions u don't need, bacause it's just to make the system work
@@ -17,18 +17,32 @@ class systemFunctions:
         if tkinter.messagebox.askyesno('Accounts_omac_lib', f"Your program will be terminated\nShould we proceed?", icon ='warning'):
             exit()
 
-    def updateRequest():
+    def updateRequest(message):
         '''Asks user for confirmation to update their account, the system only asks you when something new is added to the account itself and not the system'''
         import tkinter.messagebox
-        return tkinter.messagebox.askyesno('Accounts_omac_lib', f"Your account is outdated, Do you want us to update your account?\nYou will keep getting this message if you load newer apps unless you update", icon ='warning')
+        return tkinter.messagebox.askyesno('Accounts_omac_lib', f"Your account is outdated, Do you want us to update your account?\nIf you don\'t update {message} You will keep getting this message if you load newer apps", icon ='warning')
 
     def CAFU(accountData):
         '''Check Account For Update, and if there is an update, it will ask you to update'''
-        
+        message = ''
+        updateNeeded = False
+        if 'TempData' not in accountData:
+            accountData['TempData'] = []    
         if 'UserID' not in accountData:#2.6.0
-            if systemFunctions.updateRequest():
-                UID = systemFunctions.userID(accountData['name'])
-                accountData['UserID'] = UID
+            message += 'You won\'t be able to reconnect to online lobbies if you accidentally disconnect and'
+            updateNeeded = True
+        if updateNeeded:
+            if systemFunctions.updateRequest(message):
+                if 'UserID' not in accountData:
+                    UID = systemFunctions.userID(accountData['name'])
+                    accountData['UserID'] = UID
+            else:
+                if 'UserID' not in accountData:
+                    accountData['TempData'].append('UserID')
+                    UID = systemFunctions.userID(accountData['name'])
+                    accountData['UserID'] = UID
+                    accountData['versionHistory'].remove(version)
+                
         return accountData
 
     def checkVersion(account_version, system_version = version):
@@ -174,8 +188,8 @@ def loadAccount(accountName = 'testaccount', configSettings = ['accounts/', 'Fal
             data= dataString
         data['loadTime'] = datetime.datetime.now()
     if systemFunctions.checkVersion(data['versionHistory'][len(data['versionHistory']) -1]):
-        data = systemFunctions.CAFU(data)
         data['versionHistory'].append(version)
+    data = systemFunctions.CAFU(data)
     
     return data
 
@@ -187,7 +201,7 @@ def createAccount(accountName = 'testaccount', configSettings = ['accounts/', 'F
     fileExtention = configSettings[3]
     today = datetime.datetime.today()
     UID = systemFunctions.userID(accountName)
-    data = {'name': accountName, 'nickname': accountName, 'time': [0,'0'], 'versionHistory':[version], 'appData':{}, 'collectables':{}, 'achievements':{}, 'loadTime':0, 'UserID':UID}
+    data = {'name': accountName, 'nickname': accountName, 'time': [0,'0'], 'versionHistory':[version], 'appData':{}, 'collectables':{}, 'achievements':{}, 'loadTime':0, 'UserID':UID, 'TempData' : []}
     
 
     #creating the json
@@ -199,6 +213,7 @@ def createAccount(accountName = 'testaccount', configSettings = ['accounts/', 'F
 
 def saveAccount(data, configSettings = ['accounts/', 'False', 'testaccount', '_omac']):
     '''saves the account back to the json, will return data for when you want to keep using the data'''
+    tempdataOptions = ['UserID']
     import json
     import datetime
     path = configSettings[0]
@@ -208,7 +223,12 @@ def saveAccount(data, configSettings = ['accounts/', 'False', 'testaccount', '_o
     data['loadTime'] = 0
     data['time'][0] += timePlayed
     data['time'][1] = str(datetime.timedelta(seconds=data['time'][0]))
-    json_string = json.dumps(data)
+    saveData = dict(data)
+    for x in saveData['TempData']:
+        if x in tempdataOptions:
+            del saveData[x]
+    del saveData['TempData']
+    json_string = json.dumps(saveData)
     with open(f'{path}{data["name"].lower()}{fileExtention}.json', 'w') as outfile:
         json.dump(json_string, outfile)
         data['loadTime'] = datetime.datetime.now()
