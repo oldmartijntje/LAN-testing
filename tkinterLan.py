@@ -70,7 +70,7 @@ if hostOrClient == 'Host':
 
     #standard ip and port
     ip = socket.gethostbyname(socket.gethostname())
-    port = 1234
+    port = 6489
 
 
 
